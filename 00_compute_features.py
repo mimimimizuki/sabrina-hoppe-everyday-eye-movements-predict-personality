@@ -85,8 +85,8 @@ if __name__ == "__main__":
 				ids_annotation[(times[:,1] < ann[0]),1] = conf.time_window_annotation_wayI
 				ids_annotation[(times[:,0] > ann[0]) & (times[:,1] < ann[1]),1] = conf.time_window_annotation_shop
 				ids_annotation[(times[:,0] > ann[1]),1] = conf.time_window_annotation_wayII
-				ids_annotation[:(len(data)/2), 2] = conf.time_window_annotation_halfI
-				ids_annotation[(len(data)/2):, 2] = conf.time_window_annotation_halfII
+				ids_annotation[:(len(data)//2), 2] = conf.time_window_annotation_halfI
+				ids_annotation[(len(data)//2):, 2] = conf.time_window_annotation_halfII
 
 				windowfeats_subtask_ids.extend(ids_annotation.tolist())
 			else:
