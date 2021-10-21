@@ -12,7 +12,7 @@ do
 
 	for t in $(seq 0 6);
 	do
-		python -m classifiers.train_classifier -t $t -s 1 -a 0 -l $li -m $mi
+		python3 -m classifiers.train_classifier -t $t -s 1 -a 0 -l $li -m $mi
 		wait
 	done
 done
