@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .config import conf
+from config import conf
 import os, sys
 import pandas as pns
-from .config import names as gs
+from config import names as gs
 import getopt
 import matplotlib.gridspec as gridspec
 from sklearn.metrics import f1_score, accuracy_score
@@ -25,7 +25,7 @@ participant_ids = np.arange(0, conf.n_participants)
 def plot_overview():
 	all_baselines.groupby(by=['trait', 'clf_name'])['F1'].mean().to_csv(conf.figure_folder +
 							'/figure1.csv')
-	print('Figure1.csv written')
+	print 'Figure1.csv written'
 
 	sns.set(font_scale=2.1)
 	plt.figure(figsize=(20, 10))
@@ -47,15 +47,15 @@ def plot_overview():
 	filename = conf.figure_folder + '/figure1.pdf'
 	plt.savefig(filename, bbox_inches='tight')
 	plt.close()
-	print('wrote', filename.split('/')[-1])
+	print 'wrote', filename.split('/')[-1]
 
 
 if __name__ == "__main__":
 	# collect F1 scores for classifiers on all data from a file that was written by evaluation_single_context.py
 	datapath = conf.get_result_folder(conf.annotation_all) + '/f1s.csv'
 	if not os.path.exists(datapath):
-		print('could not find', datapath)
-		print('consider (re-)running evaluation_single_context.py')
+		print 'could not find', datapath
+		print 'consider (re-)running evaluation_single_context.py'
 		sys.exit(1)
 	our_classifier = pns.read_csv(datapath)
 	our_classifier['clf_name'] = 'our classifier'
@@ -63,25 +63,25 @@ if __name__ == "__main__":
 	# baseline 1: guess the most frequent class from each training set that was written by train_baseline.py
 	datapath = conf.result_folder + '/most_frequ_class_baseline.csv'
 	if not os.path.exists(datapath):
-		print('could not find', datapath)
-		print('consider (re-)running train_baseline.py')
+		print 'could not find', datapath
+		print 'consider (re-)running train_baseline.py'
 		sys.exit(1)
 	most_frequent_class_df = pns.read_csv(datapath)
 	most_frequent_class_df['clf_name'] = 'most frequent class'
 
 	# compute all other baselines ad hoc
 	collection = []
-	for trait in range(0, conf.n_traits):
+	for trait in xrange(0, conf.n_traits):
 		# baseline 2: random guess
 		truth = np.genfromtxt(conf.binned_personality_file, skip_header=1, usecols=(trait+1,), delimiter=',')
-		for i in range(0, 100):
+		for i in xrange(0, 100):
 			rand_guess = np.random.randint(1, 4, conf.n_participants)
 			f1 = f1_score(truth, rand_guess, average='macro')
 			collection.append([f1, conf.medium_traitlabels[trait], i, 'random guess'])
 
 		# baseline 3: label permutation test
 		#             was computed using label_permutation_test.sh and written into results. ie. is just loaded here
-		for si in range(0, m_iter):
+		for si in xrange(0, m_iter):
 			filename_rand = conf.get_result_filename(conf.annotation_all, trait, True, si, add_suffix=True)
 			if os.path.exists(filename_rand):
 				data = np.load(filename_rand)
@@ -91,8 +91,8 @@ if __name__ == "__main__":
 				f1 = f1_score(dt, pr, average='macro')
 				collection.append([f1, conf.medium_traitlabels[trait], si, 'label permutation'])
 			else:
-				print('did not find', filename_rand)
-				print('consider (re-)running label_permutation_test.sh')
+				print 'did not find', filename_rand
+				print 'consider (re-)running label_permutation_test.sh'
 				sys.exit(1)
 
 	collectiondf = pns.DataFrame(data=collection,columns=['F1','trait','iteration','clf_name'])

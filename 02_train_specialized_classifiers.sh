@@ -13,7 +13,7 @@ do
 	for t in $(seq 0 6);
 	do
 		for a in 1 2; do
-			python2.7 -m classifiers.train_classifier -t $t -s 0 -a $a -l $li -m $mi
+			python3 -m classifiers.train_classifier -t $t -s 0 -a $a -l $li -m $mi
 			wait
 		done
 	done

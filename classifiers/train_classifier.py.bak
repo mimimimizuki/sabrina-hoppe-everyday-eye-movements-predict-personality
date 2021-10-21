@@ -16,7 +16,7 @@ def predict_all():
 	threads = []
 
 	for trait in trait_list:
-		for si in range(low_repetitions, num_repetitions):
+		for si in xrange(low_repetitions, num_repetitions):
 			fname = conf.get_result_filename(annotation_value, trait, shuffle_labels, si, add_suffix=True)
 			if not os.path.exists(fname):
 				thread = threading.Thread(target=save_predictions, args=(trait, conf.get_result_filename(annotation_value, trait, shuffle_labels, si), si))
@@ -24,11 +24,11 @@ def predict_all():
 				thread.start()
 				threads.append(thread)
 			else:
-				print("existing solution:", fname)
+				print "existing solution:", fname
 
 	for thread in threads:
 		thread.join()
-		print('waiting to join')
+		print 'waiting to join'
 
 def load_data(ws, annotation_value, t, chosen_features = None):
 	x_file, y_file, id_file = conf.get_merged_feature_files(ws)
@@ -53,8 +53,8 @@ def load_data(ws, annotation_value, t, chosen_features = None):
 		y_ws = y_ws[(ids_ws[:,1] == conf.time_window_annotation_wayI) | (ids_ws[:,1] == conf.time_window_annotation_wayII)]
 		ids_ws = ids_ws[(ids_ws[:,1] == conf.time_window_annotation_wayI) | (ids_ws[:,1] == conf.time_window_annotation_wayII),0]
 	else:
-		print('unknown annotation value', annotation_value)
-		print('should be 0 (all data), 1 (way) or 2 (shop).')
+		print 'unknown annotation value', annotation_value
+		print 'should be 0 (all data), 1 (way) or 2 (shop).'
 		sys.exit(1)
 	if chosen_features is not None:
 		x_ws = x_ws[:,chosen_features]
@@ -86,16 +86,16 @@ def save_predictions(t, filename, rs):
 	chosen_ws_is = np.zeros((conf.n_participants), dtype=int)  # indices of window sizes chosen in the inner cross validation
 
 	for outer_i, (outer_train_participants, outer_test_participants) in enumerate(outer_cv):
-		print()
-		print(str(outer_i + 1) + '/' + str(conf.n_outer_folds))
+		print
+		print str(outer_i + 1) + '/' + str(conf.n_outer_folds)
 
 		# find best window size in inner cv, and discard unimportant features
 		inner_performance = np.zeros((conf.n_inner_folds, len(all_window_sizes)))
 		inner_feat_importances = np.zeros((conf.max_n_feat, len(all_window_sizes)))
 
-		for ws_i in range(0, len(all_window_sizes)):
+		for ws_i in xrange(0, len(all_window_sizes)):
 			ws = all_window_sizes[ws_i]
-			print('\t', 'ws ' + str(ws_i + 1) + '/' + str(len(all_window_sizes)))
+			print '\t', 'ws ' + str(ws_i + 1) + '/' + str(len(all_window_sizes))
 
 			# load data for this window size
 			x_ws, y_ws, ids_ws = load_data(ws, annotation_value, t)
@@ -143,7 +143,7 @@ def save_predictions(t, filename, rs):
 					innerpreds.append(values[ind])
 					innertruth.append(inner_y_test[inner_test_ids == testp][0])
 				inner_performance[inner_i, ws_i] = accuracy_score(np.array(innertruth), np.array(innerpreds))
-				print('                ACC: ', '%.2f' % (inner_performance[inner_i, ws_i] * 100))
+				print '                ACC: ', '%.2f' % (inner_performance[inner_i, ws_i] * 100)
 
 		# evaluate classifier on outer cv using the best window size from inner cv, and the most informative features
 		chosen_ws_i = np.argmax(np.mean(inner_performance, axis=0))
@@ -206,19 +206,19 @@ def save_predictions(t, filename, rs):
 	f1 = f1_score(nonzero_truth, nonzero_preds, average='macro')
 	np.savez(filename, f1=f1, predictions=preds, chosen_window_indices=chosen_ws_is,
 				feature_importances=feat_imp, detailed_predictions=detailed_preds)
-	print(f1, 'written', filename)
+	print f1, 'written', filename
 
 # If the program is run directly:
 if __name__ == "__main__":
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "t:m:l:s:a:", [])
 	except getopt.GetoptError:
-		print('valid arguments:')
-		print('-t 	trait index')
-		print('-s   1 to perform label permutation test, do not pass s or use -s 0 otherwise')
-		print('-l   lowest number of repetitions')
-		print('-m   max number of repetitions')
-		print('-a   using partial data only: 0 (all data), 1 (way data), 2(shop data)')
+		print 'valid arguments:'
+		print '-t 	trait index'
+		print '-s   1 to perform label permutation test, do not pass s or use -s 0 otherwise'
+		print '-l   lowest number of repetitions'
+		print '-m   max number of repetitions'
+		print '-a   using partial data only: 0 (all data), 1 (way data), 2(shop data)'
 		sys.exit(2)
 
 
@@ -227,7 +227,7 @@ if __name__ == "__main__":
 	verbosity = 0
 	shuffle_labels = False
 	annotation_value = conf.annotation_all
-	trait_list = range(0, conf.n_traits)
+	trait_list = xrange(0, conf.n_traits)
 
 	for opt, arg in opts:
 		if opt == '-t':
@@ -244,12 +244,12 @@ if __name__ == "__main__":
 		elif opt == '-l':
 			low_repetitions = int(arg)
 		else:
-			print('valid arguments:')
-			print('-t 	trait index')
-			print('-s   1 to perform label permutation test, do not pass s or use -s 0 otherwise')
-			print('-l   lowest number of repetitions')
-			print('-m   max number of repetitions')
-			print('-a   using partial data only: 0 (all data), 1 (way data), 2(shop data)')
+			print 'valid arguments:'
+			print '-t 	trait index'
+			print '-s   1 to perform label permutation test, do not pass s or use -s 0 otherwise'
+			print '-l   lowest number of repetitions'
+			print '-m   max number of repetitions'
+			print '-a   using partial data only: 0 (all data), 1 (way data), 2(shop data)'
 			sys.exit(2)
 
 	result_folder = conf.get_result_folder(annotation_value)

@@ -1,10 +1,10 @@
 import numpy as np
-from .config import conf
+from config import conf
 import os, sys
-from .config import names as gs
+from config import names as gs
 import pandas as pd
 
-truth = np.genfromtxt(conf.binned_personality_file, skip_header=1, usecols=range(1, conf.n_traits+1), delimiter=',')
+truth = np.genfromtxt(conf.binned_personality_file, skip_header=1, usecols=xrange(1, conf.n_traits+1), delimiter=',')
 
 # all comparisons to perform. Each has
 #     a name,
@@ -32,7 +32,7 @@ def get_average_correlation(predA, predB, m_iter):
     :return:
     """
     correlations = []
-    for si in range(0, m_iter):
+    for si in xrange(0, m_iter):
         if predB.ndim == 1:
             if np.sum(predA[:,si]) > 0:
                 A = predA[:,si]
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     # collect masks for each participant, annotation (all data, shop, way), window size and subset in question (e.g. first half, or way to the shop)
     # each mask is True for samples of a particular participant and subset; False for all others
     window_masks = []
-    for wsi in range(0, len(conf.all_window_sizes)):
+    for wsi in xrange(0, len(conf.all_window_sizes)):
         x_file, y_file, id_file = conf.get_merged_feature_files(conf.all_window_sizes[wsi])
 
         for annotation_value in conf.annotation_values:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             elif annotation_value == conf.annotation_ways:
                 ids_ws = ids_ws[(ids_ws[:, 1] == conf.time_window_annotation_wayI) | (ids_ws[:, 1] == conf.time_window_annotation_wayII), :]
 
-            for p in range(0, conf.n_participants):
+            for p in xrange(0, conf.n_participants):
                 ids_ws_p = ids_ws[(ids_ws[:, 0] == p), :]
 
                 window_masks.append([annotation_value, p, wsi, 'first half', ids_ws_p[:, 2] == conf.time_window_annotation_halfI])
@@ -96,22 +96,22 @@ if __name__ == "__main__":
     # Results are directly written into figures/table1-5.csv
     with open(conf.figure_folder + '/table1-5.csv', 'w') as f:
         f.write('comparison')
-        for trait in range(0, conf.n_traits):
+        for trait in xrange(0, conf.n_traits):
             f.write(',' + conf.medium_traitlabels[trait])
         f.write('\n')
 
-        for comp_title, (annotation_value_I, annotation_value_II, subtaskI, subtaskII) in list(comparisons.items()):
+        for comp_title, (annotation_value_I, annotation_value_II, subtaskI, subtaskII) in comparisons.items():
             f.write(comp_title)
             result_filename = conf.result_folder + '/predictions_' + comp_title.replace(' ','_') + '.npz'
             if not os.path.exists(result_filename):
-                print('computing data for', comp_title)
-                print('Note taht this might take a while - if the script is run again, intermediate results will be available and speed up all computations.')
+                print 'computing data for', comp_title
+                print 'Note taht this might take a while - if the script is run again, intermediate results will be available and speed up all computations.'
 
                 predictions_I = np.zeros((conf.n_participants, conf.n_traits, conf.max_n_iter), dtype=int)
                 predictions_II = np.zeros((conf.n_participants, conf.n_traits, conf.max_n_iter), dtype=int)
 
-                for trait in range(0, conf.n_traits):
-                    for si in range(0, conf.max_n_iter):
+                for trait in xrange(0, conf.n_traits):
+                    for si in xrange(0, conf.max_n_iter):
                         filenameI = conf.get_result_filename(annotation_value_I, trait, False, si, add_suffix=True)
                         filenameII = conf.get_result_filename(annotation_value_II, trait, False, si, add_suffix=True)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
                             detailed_predictions_II = dataII['detailed_predictions']
                             chosen_window_indices_II = dataII['chosen_window_indices']
 
-                            for p, window_index_I, window_index_II, local_detailed_preds_I, local_detailed_preds_II in zip(range(0, conf.n_participants), chosen_window_indices_I, chosen_window_indices_II, detailed_predictions_I, detailed_predictions_II):
+                            for p, window_index_I, window_index_II, local_detailed_preds_I, local_detailed_preds_II in zip(xrange(0, conf.n_participants), chosen_window_indices_I, chosen_window_indices_II, detailed_predictions_I, detailed_predictions_II):
                                 maskI = window_masks_df[(window_masks_df.annotation == annotation_value_I) &
                                                         (window_masks_df.participant == p) &
                                                         (window_masks_df['window size index'] == window_index_I) &
@@ -139,7 +139,7 @@ if __name__ == "__main__":
                                 predictions_I[p, trait, si] = get_majority_vote(np.array(local_detailed_preds_I)[maskI])
                                 predictions_II[p, trait, si] = get_majority_vote(np.array(local_detailed_preds_II)[maskII])
                         else:
-                            print('did not find', filenameI, 'or', filenameII)
+                            print 'did not find', filenameI, 'or', filenameII
                             sys.exit(1)
                 np.savez(result_filename, predictions_I=predictions_I, predictions_II=predictions_II)
             else:
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
             # predictions_I are predictions from one context, predictions_II is the other context
             # compute their average correlation and write it to file
-            for t in range(0, conf.n_traits):
+            for t in xrange(0, conf.n_traits):
                 corrI = get_average_correlation(predictions_I[:, t, :], predictions_II[:, t, :], 100)
                 f.write(','+'%.2f'%corrI)
             f.write('\n')

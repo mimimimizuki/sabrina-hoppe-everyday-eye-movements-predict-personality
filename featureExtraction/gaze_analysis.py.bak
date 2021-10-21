@@ -4,7 +4,6 @@ import sys, os
 from featureExtraction import event_detection as ed
 import operator
 from config import names as gs
-from functools import reduce
 
 class gazeAnalysis (object):
 	# dictionary for saccade-based n-grams:
@@ -358,12 +357,12 @@ class gazeAnalysis (object):
 		# create all possible n-grams of a certain length
 		ngrams = []
 		ngrams.append(mywbs)
-		for n in range(2,5):
+		for n in xrange(2,5):
 			ngrams.append([reduce(operator.add, mywbs[i:i+n]) for i in range(len(mywbs) - n)])
 
 		# compute histograms of the actual n-grams occuring in the data
 		histograms=[]
-		for i in range(0,4):
+		for i in xrange(0,4):
 			histograms.append(dict((x, ngrams[i].count(x)) for x in self.sacc_bins[i]))
 
 		# compute features from each histogram and append them to one list
@@ -450,12 +449,12 @@ class gazeAnalysis (object):
 		# compute all possible n-grams
 		ngrams = []
 		ngrams.append(wordbook_string)
-		for n in range(2,5):
+		for n in xrange(2,5):
 			ngrams.append([reduce(operator.add, wordbook_string[i:i+n]) for i in range(len(wordbook_string) - n)])
 
 		# compute histograms for n-grams
 		histograms=[]
-		for i in range(0,4):
+		for i in xrange(0,4):
 			histograms.append(dict((x, ngrams[i].count(x)) for x in self.saccFix_bins[i]))
 
 		# compute features from each histogram and append to one list
@@ -565,19 +564,19 @@ class gazeAnalysis (object):
 
 	def get_ngram_features(self, wb):
 		feat = []
-		feat.append(sum(x > 0 for x in list(wb.values())))  # 1. size
-		feat.append(np.max(list(wb.values())))  # 2. maximum
-		nonzeros = [i for i in list(wb.values()) if i]
+		feat.append(sum(x > 0 for x in wb.values()))  # 1. size
+		feat.append(np.max(wb.values()))  # 2. maximum
+		nonzeros = [i for i in wb.values() if i]
 		if len(nonzeros)<1:
 			feat.append(0)
 		else:
 			feat.append(min(nonzeros))  # 3. non-zero minimum
-		feat.append(np.argmax(list(wb.values())))  # 2. arg max
+		feat.append(np.argmax(wb.values()))  # 2. arg max
 		if len(nonzeros)<1:
 			feat.append(0)
 		else:
 			feat.append(np.argmin(np.array(nonzeros)))  # 3. arg min
 		feat.append(feat[1] - feat[2])  # 4. diff max - min
-		feat.append(np.mean(list(wb.values())))  # 5. mean of all counts
-		feat.append(np.var(list(wb.values())))  # 6. var of all counts
+		feat.append(np.mean(wb.values()))  # 5. mean of all counts
+		feat.append(np.var(wb.values()))  # 6. var of all counts
 		return feat

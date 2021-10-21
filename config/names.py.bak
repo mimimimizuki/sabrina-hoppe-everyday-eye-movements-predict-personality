@@ -127,8 +127,8 @@ position_feature_labels_long = ['mean x', 'mean y', 'mean pupil diameter',
                                 'mean subsequent angle'
                                 ]
 
-heatmap_feature_labels = ['heatmap_'+str(i).zfill(2) for i in range(0, 64)]
-heatmap_feature_labels_long = ['heatmap cell '+str(i).zfill(2) for i in range(0, 64)]
+heatmap_feature_labels = ['heatmap_'+str(i).zfill(2) for i in xrange(0, 64)]
+heatmap_feature_labels_long = ['heatmap cell '+str(i).zfill(2) for i in xrange(0, 64)]
 
 full_label_list = event_feature_labels + heatmap_feature_labels + position_feature_labels + \
                   get_wordbook_feature_labels('sacc.') + get_wordbook_feature_labels('SF')

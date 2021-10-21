@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from .config import conf
+from config import conf
 import getopt
 from sklearn.cross_validation import LabelKFold as LKF
 from sklearn.cross_validation import StratifiedKFold as SKF
@@ -25,7 +25,7 @@ def get_baseline_f1_score(t):
 	for outer_i, (outer_train_participants, outer_test_participants) in enumerate(outer_cv):
 		inner_performance = np.zeros((conf.n_inner_folds, len(conf.all_window_sizes)))
 
-		for ws_i in range(0, len(conf.all_window_sizes)):
+		for ws_i in xrange(0, len(conf.all_window_sizes)):
 			ws = conf.all_window_sizes[ws_i]
 
 			# load data for this window size
@@ -74,7 +74,7 @@ def get_baseline_f1_score(t):
 					# participant does not occour in outer test set, e.g. because their time in the shop was too short
 					preds[testp] = -1
 					truth[testp] = -1
-					print('not enough samples for participant', testp)
+					print 'not enough samples for participant', testp
 			#print 'preds collected'
 		else:
 			for testp in outer_test_participants:
@@ -87,13 +87,13 @@ def get_baseline_f1_score(t):
 # If the program is run directly:
 if __name__ == "__main__":
 	df = []
-	for trait in range(0, conf.n_traits):
+	for trait in xrange(0, conf.n_traits):
 		participant_scores = np.loadtxt(conf.binned_personality_file, delimiter=',', skiprows=1, usecols=(trait+1,))
-		print(conf.medium_traitlabels[trait])
-		for si in range(0,conf.max_n_iter):
+		print conf.medium_traitlabels[trait]
+		for si in xrange(0,conf.max_n_iter):
 			f1 = get_baseline_f1_score(trait)
-			print('\t'+str(si)+':', f1)
+			print '\t'+str(si)+':', f1
 			df.append([f1, conf.medium_traitlabels[trait], si])
 	df_pns = pns.DataFrame(data=df, columns=['F1', 'trait', 'iteration'])
 	df_pns.to_csv(conf.result_folder + '/most_frequ_class_baseline.csv')
-	print(conf.result_folder + '/most_frequ_class_baseline.csv written.')
+	print conf.result_folder + '/most_frequ_class_baseline.csv written.'

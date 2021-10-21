@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
-from .config import conf
+from config import conf
 import os
 
 hist_sum = np.zeros((len(conf.all_window_sizes)), dtype=int)
-for trait in range(0, conf.n_traits):
-  for si in range(0, 100):
+for trait in xrange(0, conf.n_traits):
+  for si in xrange(0, 100):
     filename = conf.get_result_filename(conf.annotation_all, trait, False, si, add_suffix=True)
     if os.path.exists(filename):
       data = np.load(filename)
@@ -14,7 +14,7 @@ for trait in range(0, conf.n_traits):
       hist, _ = np.histogram(chosen_window_indices, bins=np.arange(-0.5, len(conf.all_window_sizes), 1))
       hist_sum += hist
     else:
-      print('did not find', filename)
+      print 'did not find', filename
 
 hist_sum_sum = np.sum(hist_sum)
 
