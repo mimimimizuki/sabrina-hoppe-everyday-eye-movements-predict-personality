@@ -1,5 +1,5 @@
-n_parallel_jobs=1 # number of jobs that will be run in parallel
-n_total_jobs=1
+n_parallel_jobs=6 # number of jobs that will be run in parallel
+n_total_jobs=100
 for li in $(seq 0 $n_parallel_jobs $n_total_jobs);
 do
 	# the for loop below will start n_parallel_jobs for each trait
