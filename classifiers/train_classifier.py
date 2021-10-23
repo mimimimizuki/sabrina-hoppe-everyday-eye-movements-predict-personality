@@ -4,8 +4,8 @@ from config import conf
 import os
 import getopt
 import threading
-from sklearn.cross_validation import LabelKFold as LKF
-from sklearn.cross_validation import StratifiedKFold as SKF
+from sklearn.model_selection import GroupKFold as GKF
+from sklearn.model_selection import StratifiedKFold as SKF
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score
@@ -16,7 +16,7 @@ def predict_all():
 	threads = []
 
 	for trait in trait_list:
-		for si in range(low_repetitions, num_repetitions):
+		for si in range(low_repetitions, num_repetitions): # randomforest with 100 decision tree
 			fname = conf.get_result_filename(annotation_value, trait, shuffle_labels, si, add_suffix=True)
 			if not os.path.exists(fname):
 				thread = threading.Thread(target=save_predictions, args=(trait, conf.get_result_filename(annotation_value, trait, shuffle_labels, si), si))
@@ -77,18 +77,19 @@ def save_predictions(t, filename, rs):
 	# use ground truth to create folds for outer cross validation in a stratified way, i.e. such that
 	# each label occurs equally often
 	participant_scores = np.loadtxt(conf.binned_personality_file, delimiter=',', skiprows=1, usecols=(t+1,))
-	outer_cv = SKF(participant_scores, conf.n_outer_folds, shuffle=True)
+	participant_list = range(0, len(participant_scores)) 
+	outer_cv = SKF(conf.n_outer_folds, shuffle=True)
 
 	# initialise arrays to save information
-	feat_imp = np.zeros((len(outer_cv), conf.max_n_feat))  # feature importance
+	feat_imp = np.zeros((len(participant_scores), conf.max_n_feat))  # feature importance
 	preds = np.zeros((conf.n_participants), dtype=int)  # predictions on participant level
 	detailed_preds = np.zeros((conf.n_participants), dtype=object)  # predictions on time window level, array of lists
 	chosen_ws_is = np.zeros((conf.n_participants), dtype=int)  # indices of window sizes chosen in the inner cross validation
-
-	for outer_i, (outer_train_participants, outer_test_participants) in enumerate(outer_cv):
+	# for outer_i, (outer_train_participants, outer_test_participants) in enumerate(outer_cv.split(participant_list, participant_scores)):
+	for i, (outer_train_i, outer_test_i) in enumerate(outer_cv.split(participant_list, participant_scores)):
 		print()
-		print(str(outer_i + 1) + '/' + str(conf.n_outer_folds))
-
+		# print(str(outer_i + 1) + '/' + str(conf.n_outer_folds))
+		outer_train_participants, outer_test_participants = participant_scores[outer_train_i], participant_scores[outer_test_i]
 		# find best window size in inner cv, and discard unimportant features
 		inner_performance = np.zeros((conf.n_inner_folds, len(all_window_sizes)))
 		inner_feat_importances = np.zeros((conf.max_n_feat, len(all_window_sizes)))
@@ -112,8 +113,9 @@ def save_predictions(t, filename, rs):
 			outer_train_y_ids = ids_ws[outer_train_samples]
 
 			# build inner cross validation such that all samples of one person are either in training or testing
-			inner_cv = LKF(outer_train_y_ids, n_folds=conf.n_inner_folds)
-			for inner_i, (inner_train_indices, inner_test_indices) in enumerate(inner_cv):
+			# inner_cv = GKF(n_splits=conf.n_inner_folds)
+			inner_cv = SKF(conf.n_inner_folds)
+			for inner_i, (inner_train_indices, inner_test_indices) in enumerate(inner_cv.split(outer_train_x, outer_train_y)):
 				# create inner train and test samples. Note: both are taken from outer train samples!
 				inner_x_train = outer_train_x[inner_train_indices, :]
 				inner_y_train = outer_train_y[inner_train_indices]
@@ -178,27 +180,27 @@ def save_predictions(t, filename, rs):
 			pred = clf.predict(x_test)
 
 			for testp in outer_test_participants:
-				chosen_ws_is[testp] = chosen_ws_i
+				chosen_ws_is[int(testp)] = chosen_ws_i
 				if testp in ids[outer_test_samples]:
 					# majority voting over all samples that belong to participant testp
 					(values, counts) = np.unique(pred[ids[outer_test_samples] == testp], return_counts=True)
 					ind = np.argmax(counts)
-					preds[testp] = values[ind]
-					detailed_preds[testp] = list(pred[ids[outer_test_samples] == testp])
+					preds[int(testp)] = values[ind]
+					detailed_preds[int(testp)] = list(pred[ids[outer_test_samples] == testp])
 				else:
 					# participant does not occour in outer test set, e.g. because their time in the shop was too short
-					preds[testp] = -1
-					detailed_preds[testp] = []
+					preds[int(testp)] = -1
+					detailed_preds[int(testp)] = []
 
 			# save the resulting feature importance
-			feat_imp[outer_i, chosen_features] = clf.feature_importances_
+			feat_imp[i, chosen_features] = clf.feature_importances_
 
 		else:
 			for testp in outer_test_participants:
 				chosen_ws_is[testp] = -1
 				preds[testp] = np.array([])
-				truth[testp] = -1
-			feat_imp[outer_i, chosen_features] = -1
+				# truth[testp] = -1
+			feat_imp[i, chosen_features] = -1
 
 	# compute resulting F1 score and save to file
 	nonzero_preds = preds[preds>0]
@@ -227,12 +229,12 @@ if __name__ == "__main__":
 	verbosity = 0
 	shuffle_labels = False
 	annotation_value = conf.annotation_all
-	trait_list = range(0, conf.n_traits)
+	trait_list = range(0, conf.n_traits) # num of output trait 
 
 	for opt, arg in opts:
 		if opt == '-t':
 			t = int(arg)
-			assert t in trait_list
+			assert t in trait_list # 各性格ごとに並列処理
 			trait_list = [t]
 		elif opt == '-a':
 			annotation_value = int(arg)

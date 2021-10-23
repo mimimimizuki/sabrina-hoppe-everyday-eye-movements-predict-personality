@@ -7,39 +7,42 @@ from config import names as gs
 from functools import reduce
 
 class gazeAnalysis (object):
-	# dictionary for saccade-based n-grams:
-	# each character encodes one direction, capital characters stand for long saccades, the others for short ones
-	# short means the saccade amplitude is less than 2 fixation_radius_thresholds
-	#						U
- 	#					O		A
- 	#				N		u		B
-	#			M		n		b		C
-	#		L		l		.		r		R
-	#			K		j		f		E
-	#				J		d		F
-	#					H		G
-	#						D
-	sacc_dictionary = ['A', 'B', 'C', 'R', 'E', 'F', 'G', 'D', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'U', 'u', 'b', 'r', 'f',
-						'd', 'j', 'l', 'n']
-	sacc_bins_two = [a+b for a in sacc_dictionary for b in sacc_dictionary]
-	sacc_bins_three = [a+b+c for a in sacc_dictionary for b in sacc_dictionary for c in sacc_dictionary]
-	sacc_bins_four = [a+b+c+d for a in sacc_dictionary for b in sacc_dictionary for c in sacc_dictionary for d in sacc_dictionary]
-	sacc_bins = [sacc_dictionary, sacc_bins_two, sacc_bins_three, sacc_bins_four]
-
-	# dictionary for saccade and fixation-based n-grams:
-	# S are saccades, long or short (i.e. longer or shorter than the fixation radius), and up/down/right/left
-	# e.g. S_lu is a long saccade up
-	# F are fixations, either long or short (i.e. longer or shorter than twice the minimum fixation duration)
-	# saccFix_dictionary = ['S_lu', 'S_ld', 'S_lr', 'S_ll', 'S_su', 'S_sd', 'S_sr', 'S_sl', 'F_l', 'F_s']
-	saccFix_dictionary = ['U', 'D', 'R', 'L', 'u', 'd', 'r', 'l', 'F', 'f']
-	saccFix_bins_two = [a+b for a in saccFix_dictionary for b in saccFix_dictionary]
-	saccFix_bins_three = [a+b+c for a in saccFix_dictionary for b in saccFix_dictionary for c in saccFix_dictionary]
-	saccFix_bins_four = [a+b+c+d for a in saccFix_dictionary for b in saccFix_dictionary for c in saccFix_dictionary for d in saccFix_dictionary]
-	saccFix_bins = [saccFix_dictionary, saccFix_bins_two, saccFix_bins_three, saccFix_bins_four]
 
 	def __init__(self, gaze, fixation_radius_threshold, fixation_duration_threshold, saccade_min_velocity,max_saccade_duration,
 					pupil_diameter=None, event_strings=None, ti=0, xi=1, yi=2):
 		assert gaze.size > 0
+
+		# dictionary for saccade-based n-grams:
+		# each character encodes one direction, capital characters stand for long saccades, the others for short ones
+		# short means the saccade amplitude is less than 2 fixation_radius_thresholds
+		#						U
+		#					O		A
+		#				N		u		B
+		#			M		n		b		C
+		#		L		l		.		r		R
+		#			K		j		f		E
+		#				J		d		F
+		#					H		G
+		#						D
+		sacc_dictionary = ['A', 'B', 'C', 'R', 'E', 'F', 'G', 'D', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'U', 'u', 'b', 'r', 'f',
+							'd', 'j', 'l', 'n']
+		sacc_bins_two = [a+b for a in sacc_dictionary for b in sacc_dictionary]
+		sacc_bins_three = [a+b+c for a in sacc_dictionary for b in sacc_dictionary for c in sacc_dictionary]
+		sacc_bins_four = [a+b+c+d for a in sacc_dictionary for b in sacc_dictionary for c in sacc_dictionary for d in sacc_dictionary]
+		sacc_bins = [sacc_dictionary, sacc_bins_two, sacc_bins_three, sacc_bins_four]
+		self.sacc_bins = sacc_bins
+
+		# dictionary for saccade and fixation-based n-grams:
+		# S are saccades, long or short (i.e. longer or shorter than the fixation radius), and up/down/right/left
+		# e.g. S_lu is a long saccade up
+		# F are fixations, either long or short (i.e. longer or shorter than twice the minimum fixation duration)
+		# saccFix_dictionary = ['S_lu', 'S_ld', 'S_lr', 'S_ll', 'S_su', 'S_sd', 'S_sr', 'S_sl', 'F_l', 'F_s']
+		saccFix_dictionary = ['U', 'D', 'R', 'L', 'u', 'd', 'r', 'l', 'F', 'f']
+		saccFix_bins_two = [a+b for a in saccFix_dictionary for b in saccFix_dictionary]
+		saccFix_bins_three = [a+b+c for a in saccFix_dictionary for b in saccFix_dictionary for c in saccFix_dictionary]
+		saccFix_bins_four = [a+b+c+d for a in saccFix_dictionary for b in saccFix_dictionary for c in saccFix_dictionary for d in saccFix_dictionary]
+		saccFix_bins = [saccFix_dictionary, saccFix_bins_two, saccFix_bins_three, saccFix_bins_four]
+		self.saccFix_bins = saccFix_bins
 
 		# save data in instance
 		self.gaze = gaze

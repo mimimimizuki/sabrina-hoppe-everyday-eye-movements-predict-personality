@@ -1,11 +1,11 @@
 import numpy as np
 import os
-from .config import conf
-from .featureExtraction import gaze_analysis as ga
+from config import conf
+from featureExtraction import gaze_analysis as ga
 import threading
 import getopt
 import sys
-from .config import names as gs
+from config import names as gs
 
 def compute_sliding_window_features(participant, ws, gazeAnalysis_instance):
 	"""
